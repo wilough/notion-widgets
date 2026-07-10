@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- mood.html -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -21,12 +22,14 @@
     --okay:#d9d9d9;
     --okay-ink:#474747;
     --low:#722f39;
-    --low-ink:#722f39;
+    --low-ink:#f6e8e9;
     --rough:#474747;
-    --rough-ink:#474747;
+    --rough-ink:#f6f6f6;
     --today-ring:#722f39;
   }
+
   *{box-sizing:border-box;}
+
   body{
     margin:0;
     font-family:'Inter',sans-serif;
@@ -36,6 +39,7 @@
     justify-content:center;
     padding:24px 12px;
   }
+
   .card{
     width:100%;
     max-width:420px;
@@ -44,6 +48,7 @@
     padding:28px 26px 30px;
     box-shadow:0 1px 2px rgba(0,0,0,0.03);
   }
+
   .eyebrow{
     display:flex;
     align-items:center;
@@ -54,26 +59,70 @@
     color:var(--muted);
     padding-bottom:14px;
     border-bottom:1px solid var(--line);
-    margin-bottom:20px;
+    margin-bottom:16px;
   }
+
   .eyebrow svg{width:14px;height:14px;flex-shrink:0;}
+
+  .header-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:4px;
+  }
+
   h1{
     font-family:'Playfair Display',serif;
     font-weight:600;
-    font-size:30px;
-    margin:0 0 4px;
+    font-size:26px;
+    margin:0;
   }
+
+  .month-nav{
+    display:flex;
+    align-items:center;
+    gap:4px;
+  }
+
+  .nav-btn{
+    width:26px;
+    height:26px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:#f7f5f5;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:14px;
+    padding:0;
+    transition:background .12s ease, transform .12s ease, box-shadow .12s ease;
+  }
+
+  .nav-btn:hover{
+    background:#f0ecec;
+    box-shadow:0 1px 2px rgba(0,0,0,0.06);
+  }
+
+  .nav-btn:active{
+    transform:scale(.94);
+  }
+
   .sub{
     font-size:13px;
     color:var(--muted);
-    margin:0 0 18px;
+    margin:2px 0 16px;
   }
+
   .moods{
     display:flex;
     flex-wrap:wrap;
     gap:8px;
-    margin-bottom:22px;
+    margin-bottom:18px;
   }
+
   .mood-btn{
     display:flex;
     align-items:center;
@@ -85,15 +134,19 @@
     font-weight:600;
     cursor:pointer;
     font-family:'Inter',sans-serif;
-    transition:transform .12s ease;
+    transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
   }
+
   .mood-btn:active{transform:scale(.96);}
+  .mood-btn:hover{box-shadow:0 1px 2px rgba(0,0,0,0.05);}
   .mood-btn .e{font-size:15px;}
+
   .mood-btn[data-mood="amazing"]{background:#f3e3e1;color:var(--amazing-ink);}
   .mood-btn[data-mood="good"]{background:#f1e6e5;color:var(--good-ink);}
   .mood-btn[data-mood="okay"]{background:#ebebeb;color:var(--okay-ink);}
   .mood-btn[data-mood="low"]{background:#e6d2d5;color:var(--low-ink);}
   .mood-btn[data-mood="rough"]{background:#e0e0e0;color:var(--rough-ink);}
+
   .mood-btn.selected[data-mood="amazing"]{border-color:var(--amazing-ink);}
   .mood-btn.selected[data-mood="good"]{border-color:var(--good-ink);}
   .mood-btn.selected[data-mood="okay"]{border-color:var(--okay-ink);}
@@ -105,17 +158,21 @@
     grid-template-columns:repeat(7,1fr);
     margin-bottom:8px;
   }
+
   .weekdays span{
     font-size:11px;
     color:var(--muted);
     text-align:center;
     font-weight:500;
   }
+
   .grid{
     display:grid;
     grid-template-columns:repeat(7,1fr);
     gap:6px;
+    margin-bottom:12px;
   }
+
   .day{
     aspect-ratio:1;
     background:var(--day-bg);
@@ -129,24 +186,94 @@
     position:relative;
     border:2px solid transparent;
     user-select:none;
+    transition:
+      background .16s ease,
+      transform .12s ease,
+      box-shadow .12s ease,
+      border-color .16s ease,
+      opacity .16s ease;
   }
-  .day.empty{visibility:hidden;cursor:default;}
-  .day.today{border-color:var(--today-ring);font-weight:600;}
-  .day .e{font-size:18px;}
+
+  .day.empty{
+    visibility:hidden;
+    cursor:default;
+  }
+
+  .day:not(.empty):hover{
+    transform:translateY(-1px);
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .day.today{
+    border-color:var(--today-ring);
+    font-weight:600;
+  }
+
+  .day .e{
+    font-size:18px;
+    display:inline-block;
+    transform:scale(0.9);
+    opacity:0;
+    transition:transform .16s ease, opacity .16s ease;
+  }
+
+  .day[data-mood] .e{
+    transform:scale(1);
+    opacity:1;
+  }
+
   .day[data-mood="amazing"]{background:#f4d160;}
   .day[data-mood="good"]{background:var(--good);}
   .day[data-mood="okay"]{background:var(--okay);}
-  .day[data-mood="low"]{background:var(--low);}
-  .day[data-mood="rough"]{background:var(--rough);}
+  .day[data-mood="low"]{background:var(--low);color:var(--low-ink);}
+  .day[data-mood="rough"]{background:var(--rough);color:var(--rough-ink);}
+
+  .legend{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:6px;
+    font-size:11px;
+    color:var(--muted);
+  }
+
+  .legend-item{
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+
+  .legend-swatch{
+    width:14px;
+    height:14px;
+    border-radius:999px;
+    border:1px solid rgba(0,0,0,0.06);
+  }
+
+  .legend-swatch.amazing{background:var(--amazing);}
+  .legend-swatch.good{background:var(--good);}
+  .legend-swatch.okay{background:var(--okay);}
+  .legend-swatch.low{background:var(--low);}
+  .legend-swatch.rough{background:var(--rough);}
 </style>
 </head>
 <body>
 <div class="card">
   <div class="eyebrow">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M8 15c1 1.2 2.4 2 4 2s3-.8 4-2"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M9 10h.01M15 10h.01M8 15c1 1.2 2.4 2 4 2s3-.8 4-2"/>
+    </svg>
     MOOD TRACKER
   </div>
-  <h1 id="monthLabel">March 2025</h1>
+
+  <div class="header-row">
+    <h1 id="monthLabel">March 2025</h1>
+    <div class="month-nav">
+      <button class="nav-btn" id="prevMonth" aria-label="Previous month">‹</button>
+      <button class="nav-btn" id="nextMonth" aria-label="Next month">›</button>
+    </div>
+  </div>
   <p class="sub">Tap a mood · tap a day</p>
 
   <div class="moods">
@@ -161,91 +288,129 @@
     <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
   </div>
   <div class="grid" id="grid"></div>
+
+  <div class="legend">
+    <div class="legend-item">
+      <span class="legend-swatch amazing"></span>
+      <span>Amazing</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch good"></span>
+      <span>Good</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch okay"></span>
+      <span>Okay</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch low"></span>
+      <span>Low</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-swatch rough"></span>
+      <span>Rough</span>
+    </div>
+  </div>
 </div>
 
 <script>
-const MOOD_EMOJI = { amazing:'☀️', good:'😊', okay:'😐', low:'😟', rough:'😣' };
+const MOOD_EMOJI = {
+  amazing:'☀️',
+  good:'😊',
+  okay:'😐',
+  low:'😟',
+  rough:'😣'
+};
 
-// --- persistence key is month+year so each month has its own map ---
-const now = new Date();
-const year = now.getFullYear();
-const month = now.getMonth();
-const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const storageKey = `mood-tracker-${year}-${month}`;
+const monthNames = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December"
+];
 
-// load saved moods (object of { [dayNumber]: mood })
-let dayMoods = {};
-try {
-  const saved = localStorage.getItem(storageKey);
-  if (saved) {
-    const parsed = JSON.parse(saved);
-    if (parsed && typeof parsed === 'object') {
-      dayMoods = parsed;
+const today = new Date();
+const todayYear = today.getFullYear();
+const todayMonth = today.getMonth();
+const todayDate = today.getDate();
+
+let viewYear = todayYear;
+let viewMonth = todayMonth;
+let dayMoods = {}; // { [day]: mood }
+let selectedMood = null;
+
+const monthLabel = document.getElementById('monthLabel');
+const grid = document.getElementById('grid');
+const prevMonthBtn = document.getElementById('prevMonth');
+const nextMonthBtn = document.getElementById('nextMonth');
+const moodBtns = document.querySelectorAll('.mood-btn');
+
+function getStorageKey(year, month){
+  return `mood-tracker-${year}-${month}`;
+}
+
+function loadMoodsFor(year, month){
+  const key = getStorageKey(year, month);
+  try{
+    const saved = localStorage.getItem(key);
+    if(saved){
+      const parsed = JSON.parse(saved);
+      if(parsed && typeof parsed === 'object'){
+        dayMoods = parsed;
+        return;
+      }
     }
-  }
-} catch(e){
+  }catch(e){}
   dayMoods = {};
 }
 
-let selectedMood = null;
-
-// set month label
-document.getElementById('monthLabel').textContent = monthNames[month] + " " + year;
-
-// mood button interactivity
-const moodBtns = document.querySelectorAll('.mood-btn');
-moodBtns.forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    const m = btn.dataset.mood;
-    if(selectedMood === m){
-      selectedMood = null;
-    } else {
-      selectedMood = m;
-    }
-    moodBtns.forEach(b=>b.classList.toggle('selected', b.dataset.mood===selectedMood));
-  });
-});
-
-// save current dayMoods to localStorage
 function persistMoods(){
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(dayMoods));
-  } catch(e){
-    // fail silently if storage unavailable
-  }
+  const key = getStorageKey(viewYear, viewMonth);
+  try{
+    localStorage.setItem(key, JSON.stringify(dayMoods));
+  }catch(e){}
+}
+
+function updateMonthLabel(){
+  monthLabel.textContent = monthNames[viewMonth] + " " + viewYear;
 }
 
 function buildCalendar(){
-  const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const todayDate = now.getDate();
 
-  for(let i=0;i<firstDay;i++){
+  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  for(let i = 0; i < firstDay; i++){
     const empty = document.createElement('div');
     empty.className = 'day empty';
     grid.appendChild(empty);
   }
 
-  for(let d=1; d<=daysInMonth; d++){
+  for(let d = 1; d <= daysInMonth; d++){
     const cell = document.createElement('div');
     cell.className = 'day';
     cell.textContent = d;
 
-    if(d === todayDate) cell.classList.add('today');
+    const isToday =
+      viewYear === todayYear &&
+      viewMonth === todayMonth &&
+      d === todayDate;
+
+    if(isToday){
+      cell.classList.add('today');
+    }
 
     if(dayMoods[d]){
-      cell.dataset.mood = dayMoods[d];
-      cell.innerHTML = '<span class="e">'+MOOD_EMOJI[dayMoods[d]]+'</span>';
+      const mood = dayMoods[d];
+      cell.dataset.mood = mood;
+      cell.innerHTML = '<span class="e">'+ MOOD_EMOJI[mood] +'</span>';
     }
 
     cell.addEventListener('click', ()=>{
       if(selectedMood){
         dayMoods[d] = selectedMood;
         cell.dataset.mood = selectedMood;
-        cell.innerHTML = '<span class="e">'+MOOD_EMOJI[selectedMood]+'</span>';
-      } else {
+        cell.innerHTML = '<span class="e">'+ MOOD_EMOJI[selectedMood] +'</span>';
+      }else{
         delete dayMoods[d];
         delete cell.dataset.mood;
         cell.textContent = d;
@@ -257,7 +422,50 @@ function buildCalendar(){
   }
 }
 
-buildCalendar();
+function setMonth(year, month){
+  viewYear = year;
+  viewMonth = month;
+  loadMoodsFor(viewYear, viewMonth);
+  updateMonthLabel();
+  buildCalendar();
+}
+
+moodBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const m = btn.dataset.mood;
+    if(selectedMood === m){
+      selectedMood = null;
+    }else{
+      selectedMood = m;
+    }
+    moodBtns.forEach(b => {
+      b.classList.toggle('selected', b.dataset.mood === selectedMood);
+    });
+  });
+});
+
+prevMonthBtn.addEventListener('click', ()=>{
+  let y = viewYear;
+  let m = viewMonth - 1;
+  if(m < 0){
+    m = 11;
+    y -= 1;
+  }
+  setMonth(y, m);
+});
+
+nextMonthBtn.addEventListener('click', ()=>{
+  let y = viewYear;
+  let m = viewMonth + 1;
+  if(m > 11){
+    m = 0;
+    y += 1;
+  }
+  setMonth(y, m);
+});
+
+// initial render: current month
+setMonth(todayYear, todayMonth);
 </script>
 </body>
 </html>
