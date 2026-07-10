@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hydration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#ececec;
+    --card:#ffffff;
+    --ink:#474747;
+    --muted:#948f8f;
+    --line:#e2dcdc;
+    --blue:#722f39;
+    --blue-light:#f1e3e2;
+    --blue-ink:#722f39;
+    --tan:#f4e8e6;
+    --tan-line:#dab8b7;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:24px 12px;
+  }
+  .card{
+    width:100%;
+    max-width:420px;
+    background:var(--card);
+    border-radius:20px;
+    padding:28px 26px 30px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:11px;
+    letter-spacing:.18em;
+    font-weight:600;
+    color:var(--muted);
+    padding-bottom:14px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:26px;
+  }
+  .eyebrow svg{width:14px;height:14px;flex-shrink:0;}
+
+  .bottle-wrap{
+    display:flex;
+    justify-content:center;
+    margin-bottom:18px;
+  }
+  svg.bottle{ width:140px; height:220px; overflow:visible; }
+
+  .pct{
+    text-align:center;
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:32px;
+    color:var(--blue-ink);
+    margin:0 0 2px;
+  }
+  .amt{
+    text-align:center;
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 24px;
+  }
+
+  .glasses{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:8px;
+    margin-bottom:22px;
+  }
+  .glass{
+    aspect-ratio:1;
+    border-radius:12px;
+    background:var(--blue-light);
+    border:1px solid #e0cccb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .glass.filled{ background:var(--blue); }
+  .glass svg{ width:20px; height:20px; }
+
+  .goal-row{
+    display:flex;
+    gap:10px;
+  }
+  .goal-row input{
+    flex:1;
+    background:var(--tan);
+    border:1px solid var(--tan-line);
+    border-radius:12px;
+    padding:12px 16px;
+    font-size:15px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    color:var(--ink);
+    outline:none;
+  }
+  .goal-row button{
+    background:var(--blue);
+    border:none;
+    border-radius:12px;
+    padding:12px 22px;
+    font-size:14px;
+    font-weight:600;
+    color:#ffffff;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .goal-row button:active{ opacity:.85; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2s6 7 6 12a6 6 0 0 1-12 0c0-5 6-12 6-12z"/></svg>
+    HYDRATION
+  </div>
+
+  <div class="bottle-wrap">
+    <svg class="bottle" viewBox="0 0 100 160">
+      <defs>
+        <clipPath id="bottleClip">
+          <path d="M38 8 H62 V26 C62 26 76 34 76 52 V140 C76 150 68 156 58 156 H42 C32 156 24 150 24 140 V52 C24 34 38 26 38 26 Z"/>
+        </clipPath>
+      </defs>
+      <path d="M38 8 H62 V26 C62 26 76 34 76 52 V140 C76 150 68 156 58 156 H42 C32 156 24 150 24 140 V52 C24 34 38 26 38 26 Z"
+        fill="#f6efee" stroke="#dab8b7" stroke-width="2"/>
+      <rect id="waterFill" x="24" y="156" width="52" height="0" fill="#daaba6" clip-path="url(#bottleClip)"/>
+      <rect x="42" y="2" width="16" height="8" rx="2" fill="#dab8b7" stroke="#dab8b7" stroke-width="1.5"/>
+    </svg>
+  </div>
+
+  <p class="pct" id="pctLabel">0%</p>
+  <p class="amt" id="amtLabel">0 / 1500 ml</p>
+
+  <div class="glasses" id="glasses"></div>
+
+  <div class="goal-row">
+    <input type="number" id="goalInput" value="1500">
+    <button id="setBtn">Set</button>
+  </div>
+</div>
+
+<script>
+const glassCount = 6;
+let goal = 1500;
+let filled = 0;
+
+const glassesEl = document.getElementById('glasses');
+const pctLabel = document.getElementById('pctLabel');
+const amtLabel = document.getElementById('amtLabel');
+const waterFill = document.getElementById('waterFill');
+const goalInput = document.getElementById('goalInput');
+const setBtn = document.getElementById('setBtn');
+
+function glassSvg(){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l-1.5 15a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2L6 3z"/><path d="M6 8h12"/></svg>';
+}
+
+function render(){
+  glassesEl.innerHTML = '';
+  for(let i=0;i<glassCount;i++){
+    const g = document.createElement('div');
+    g.className = 'glass' + (i < filled ? ' filled' : '');
+    g.style.color = i < filled ? '#722f39' : '#daaba6';
+    g.innerHTML = glassSvg();
+    g.addEventListener('click', ()=>{
+      if(i < filled){
+        filled = i;
+      } else {
+        filled = i + 1;
+      }
+      update();
+    });
+    glassesEl.appendChild(g);
+  }
+}
+
+function update(){
+  const perGlass = goal / glassCount;
+  const ml = Math.round(filled * perGlass);
+  const pct = Math.round((ml / goal) * 100);
+  pctLabel.textContent = pct + '%';
+  amtLabel.textContent = ml + ' / ' + goal + ' ml';
+  waterFill.setAttribute('height', (pct/100 * 148));
+  waterFill.setAttribute('y', 156 - (pct/100 * 148));
+  render();
+}
+
+setBtn.addEventListener('click', ()=>{
+  const v = parseInt(goalInput.value, 10);
+  if(v && v > 0){
+    goal = v;
+    if(filled > glassCount) filled = glassCount;
+    update();
+  }
+});
+
+render();
+update();
+</script>
+</body>
+</html>

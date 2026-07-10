@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#ececec;
+    --card:#ffffff;
+    --ink:#474747;
+    --muted:#948f8f;
+    --line:#e2dcdc;
+    --day-bg:#f1efef;
+    --amazing:#daaba6;
+    --amazing-ink:#722f39;
+    --good:#dab8b7;
+    --good-ink:#722f39;
+    --okay:#d9d9d9;
+    --okay-ink:#474747;
+    --low:#722f39;
+    --low-ink:#722f39;
+    --rough:#474747;
+    --rough-ink:#474747;
+    --today-ring:#722f39;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:24px 12px;
+  }
+  .card{
+    width:100%;
+    max-width:420px;
+    background:var(--card);
+    border-radius:20px;
+    padding:28px 26px 30px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:11px;
+    letter-spacing:.18em;
+    font-weight:600;
+    color:var(--muted);
+    padding-bottom:14px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:20px;
+  }
+  .eyebrow svg{width:14px;height:14px;flex-shrink:0;}
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:600;
+    font-size:30px;
+    margin:0 0 4px;
+  }
+  .sub{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 18px;
+  }
+  .moods{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:22px;
+  }
+  .mood-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    border:1.5px solid transparent;
+    border-radius:999px;
+    padding:8px 14px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    transition:transform .12s ease;
+  }
+  .mood-btn:active{transform:scale(.96);}
+  .mood-btn .e{font-size:15px;}
+  .mood-btn[data-mood="amazing"]{background:#f3e3e1;color:var(--amazing-ink);}
+  .mood-btn[data-mood="good"]{background:#f1e6e5;color:var(--good-ink);}
+  .mood-btn[data-mood="okay"]{background:#ebebeb;color:var(--okay-ink);}
+  .mood-btn[data-mood="low"]{background:#e6d2d5;color:var(--low-ink);}
+  .mood-btn[data-mood="rough"]{background:#e0e0e0;color:var(--rough-ink);}
+  .mood-btn.selected[data-mood="amazing"]{border-color:var(--amazing-ink);}
+  .mood-btn.selected[data-mood="good"]{border-color:var(--good-ink);}
+  .mood-btn.selected[data-mood="okay"]{border-color:var(--okay-ink);}
+  .mood-btn.selected[data-mood="low"]{border-color:var(--low-ink);}
+  .mood-btn.selected[data-mood="rough"]{border-color:var(--rough-ink);}
+
+  .weekdays{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    margin-bottom:8px;
+  }
+  .weekdays span{
+    font-size:11px;
+    color:var(--muted);
+    text-align:center;
+    font-weight:500;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+  .day{
+    aspect-ratio:1;
+    background:var(--day-bg);
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    color:var(--ink);
+    cursor:pointer;
+    position:relative;
+    border:2px solid transparent;
+    user-select:none;
+  }
+  .day.empty{visibility:hidden;cursor:default;}
+  .day.today{border-color:var(--today-ring);font-weight:600;}
+  .day .e{font-size:18px;}
+  .day[data-mood="amazing"]{background:#f4d160;}
+  .day[data-mood="good"]{background:var(--good);}
+  .day[data-mood="okay"]{background:var(--okay);}
+  .day[data-mood="low"]{background:var(--low);}
+  .day[data-mood="rough"]{background:var(--rough);}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 10h.01M15 10h.01M8 15c1 1.2 2.4 2 4 2s3-.8 4-2"/></svg>
+    MOOD TRACKER
+  </div>
+  <h1 id="monthLabel">March 2025</h1>
+  <p class="sub">Tap a mood · tap a day</p>
+
+  <div class="moods">
+    <button class="mood-btn" data-mood="amazing"><span class="e">☀️</span>Amazing</button>
+    <button class="mood-btn" data-mood="good"><span class="e">😊</span>Good</button>
+    <button class="mood-btn" data-mood="okay"><span class="e">😐</span>Okay</button>
+    <button class="mood-btn" data-mood="low"><span class="e">😟</span>Low</button>
+    <button class="mood-btn" data-mood="rough"><span class="e">😣</span>Rough</button>
+  </div>
+
+  <div class="weekdays">
+    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const MOOD_EMOJI = { amazing:'☀️', good:'😊', okay:'😐', low:'😟', rough:'😣' };
+
+let selectedMood = null;
+const dayMoods = {};
+
+const now = new Date();
+const year = now.getFullYear();
+const month = now.getMonth();
+const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+document.getElementById('monthLabel').textContent = monthNames[month] + " " + year;
+
+const moodBtns = document.querySelectorAll('.mood-btn');
+moodBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const m = btn.dataset.mood;
+    if(selectedMood === m){
+      selectedMood = null;
+    } else {
+      selectedMood = m;
+    }
+    moodBtns.forEach(b=>b.classList.toggle('selected', b.dataset.mood===selectedMood));
+  });
+});
+
+function buildCalendar(){
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayDate = now.getDate();
+
+  for(let i=0;i<firstDay;i++){
+    const empty = document.createElement('div');
+    empty.className = 'day empty';
+    grid.appendChild(empty);
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    cell.textContent = d;
+    if(d === todayDate) cell.classList.add('today');
+    if(dayMoods[d]){
+      cell.dataset.mood = dayMoods[d];
+      cell.innerHTML = '<span class="e">'+MOOD_EMOJI[dayMoods[d]]+'</span>';
+    }
+    cell.addEventListener('click', ()=>{
+      if(selectedMood){
+        dayMoods[d] = selectedMood;
+        cell.dataset.mood = selectedMood;
+        cell.innerHTML = '<span class="e">'+MOOD_EMOJI[selectedMood]+'</span>';
+      } else {
+        delete dayMoods[d];
+        delete cell.dataset.mood;
+        cell.textContent = d;
+      }
+    });
+    grid.appendChild(cell);
+  }
+}
+
+buildCalendar();
+</script>
+</body>
+</html>

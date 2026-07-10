@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sleep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#3a3a3a;
+    --card:#3a3a3a;
+    --ink:#f1e8e7;
+    --muted:#bdb5b4;
+    --line:#545454;
+    --purple:#daaba6;
+    --field:#4a4a4a;
+    --grad1:#722f39;
+    --grad2:#daaba6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:#d9d9d9;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:24px 12px;
+  }
+  .card{
+    width:100%;
+    max-width:420px;
+    background:var(--bg);
+    border-radius:20px;
+    padding:28px 26px 30px;
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:11px;
+    letter-spacing:.18em;
+    font-weight:600;
+    color:var(--muted);
+    padding-bottom:14px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:22px;
+  }
+  .eyebrow svg{width:14px;height:14px;flex-shrink:0;}
+
+  h1{
+    font-family:'Playfair Display',serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:22px;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hours{
+    font-family:'Playfair Display',serif;
+    font-weight:700;
+    font-size:56px;
+    color:var(--purple);
+    margin:0;
+    line-height:1;
+  }
+  .hours-label{
+    font-size:13px;
+    color:var(--muted);
+    margin:6px 0 22px;
+  }
+
+  .times{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .time-field label{
+    display:block;
+    font-size:10px;
+    letter-spacing:.14em;
+    font-weight:600;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  .time-box{
+    background:var(--field);
+    border-radius:14px;
+    padding:12px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .time-box input{
+    background:none;
+    border:none;
+    outline:none;
+    color:var(--ink);
+    font-size:20px;
+    font-weight:700;
+    font-family:'Inter',sans-serif;
+    width:100%;
+    color-scheme:dark;
+  }
+  .time-box svg{ width:16px;height:16px; color:var(--muted); flex-shrink:0; }
+
+  .quality{
+    display:flex;
+    gap:10px;
+    margin-bottom:26px;
+  }
+  .quality button{
+    background:var(--field);
+    border:2px solid transparent;
+    border-radius:50%;
+    width:44px;
+    height:44px;
+    font-size:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .quality button.selected{
+    border-color:var(--purple);
+  }
+
+  .log-btn{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:16px;
+    font-size:15px;
+    font-weight:600;
+    color:#ffffff;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    background:linear-gradient(90deg, var(--grad1), var(--grad2));
+  }
+  .log-btn:active{ opacity:.9; }
+  .log-btn.logged{ background:linear-gradient(90deg,#474747,#948f8f); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    SLEEP
+  </div>
+
+  <h1>Last night</h1>
+  <p class="hours" id="hoursLabel">8.0</p>
+  <p class="hours-label">hours calculated</p>
+
+  <div class="times">
+    <div class="time-field">
+      <label>BEDTIME</label>
+      <div class="time-box">
+        <input type="time" id="bedtime" value="22:00">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+    </div>
+    <div class="time-field">
+      <label>WAKE UP</label>
+      <div class="time-box">
+        <input type="time" id="wakeup" value="06:00">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="quality" id="quality">
+    <button data-q="rough">😪</button>
+    <button data-q="low">🥱</button>
+    <button data-q="okay">😐</button>
+    <button data-q="good" class="selected">😊</button>
+    <button data-q="amazing">✨</button>
+  </div>
+
+  <button class="log-btn" id="logBtn">Log sleep ✓</button>
+</div>
+
+<script>
+const bedtimeEl = document.getElementById('bedtime');
+const wakeupEl = document.getElementById('wakeup');
+const hoursLabel = document.getElementById('hoursLabel');
+const qualityBtns = document.querySelectorAll('#quality button');
+const logBtn = document.getElementById('logBtn');
+
+let selectedQuality = 'good';
+
+function computeHours(){
+  const [bh, bm] = bedtimeEl.value.split(':').map(Number);
+  const [wh, wm] = wakeupEl.value.split(':').map(Number);
+  if(isNaN(bh) || isNaN(wh)) return;
+  let bedMinutes = bh*60 + bm;
+  let wakeMinutes = wh*60 + wm;
+  let diff = wakeMinutes - bedMinutes;
+  if(diff <= 0) diff += 24*60;
+  const hours = diff / 60;
+  hoursLabel.textContent = hours.toFixed(1);
+}
+
+bedtimeEl.addEventListener('input', computeHours);
+wakeupEl.addEventListener('input', computeHours);
+
+qualityBtns.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    selectedQuality = btn.dataset.q;
+    qualityBtns.forEach(b=>b.classList.toggle('selected', b===btn));
+  });
+});
+
+logBtn.addEventListener('click', ()=>{
+  logBtn.textContent = 'Logged ✓';
+  logBtn.classList.add('logged');
+  setTimeout(()=>{
+    logBtn.textContent = 'Log sleep ✓';
+    logBtn.classList.remove('logged');
+  }, 1600);
+});
+
+computeHours();
+</script>
+</body>
+</html>
