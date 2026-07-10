@@ -166,15 +166,33 @@
 <script>
 const MOOD_EMOJI = { amazing:'☀️', good:'😊', okay:'😐', low:'😟', rough:'😣' };
 
-let selectedMood = null;
-const dayMoods = {};
-
+// --- persistence key is month+year so each month has its own map ---
 const now = new Date();
 const year = now.getFullYear();
 const month = now.getMonth();
 const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const storageKey = `mood-tracker-${year}-${month}`;
+
+// load saved moods (object of { [dayNumber]: mood })
+let dayMoods = {};
+try {
+  const saved = localStorage.getItem(storageKey);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed && typeof parsed === 'object') {
+      dayMoods = parsed;
+    }
+  }
+} catch(e){
+  dayMoods = {};
+}
+
+let selectedMood = null;
+
+// set month label
 document.getElementById('monthLabel').textContent = monthNames[month] + " " + year;
 
+// mood button interactivity
 const moodBtns = document.querySelectorAll('.mood-btn');
 moodBtns.forEach(btn=>{
   btn.addEventListener('click', ()=>{
@@ -187,6 +205,15 @@ moodBtns.forEach(btn=>{
     moodBtns.forEach(b=>b.classList.toggle('selected', b.dataset.mood===selectedMood));
   });
 });
+
+// save current dayMoods to localStorage
+function persistMoods(){
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(dayMoods));
+  } catch(e){
+    // fail silently if storage unavailable
+  }
+}
 
 function buildCalendar(){
   const grid = document.getElementById('grid');
@@ -205,11 +232,14 @@ function buildCalendar(){
     const cell = document.createElement('div');
     cell.className = 'day';
     cell.textContent = d;
+
     if(d === todayDate) cell.classList.add('today');
+
     if(dayMoods[d]){
       cell.dataset.mood = dayMoods[d];
       cell.innerHTML = '<span class="e">'+MOOD_EMOJI[dayMoods[d]]+'</span>';
     }
+
     cell.addEventListener('click', ()=>{
       if(selectedMood){
         dayMoods[d] = selectedMood;
@@ -220,7 +250,9 @@ function buildCalendar(){
         delete cell.dataset.mood;
         cell.textContent = d;
       }
+      persistMoods();
     });
+
     grid.appendChild(cell);
   }
 }
