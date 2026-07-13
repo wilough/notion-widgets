@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<!-- dashboard.html -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wellness Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --card:#ffffff;
+    --ink:#474747;
+    --muted:#948f8f;
+    --line:#e2dcdc;
+    --rose:#daaba6;
+    --wine:#722f39;
+    --charcoal:#474747;
+    --soft-bg:#f6efee;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:transparent;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:24px 12px;
+  }
+  .card{
+    width:100%;
+    max-width:480px;
+    background:var(--card);
+    border-radius:20px;
+    padding:24px 22px 26px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+  }
+
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:11px;
+    letter-spacing:.18em;
+    font-weight:600;
+    color:var(--muted);
+    padding-bottom:10px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:16px;
+  }
+  .eyebrow svg{width:14px;height:14px;flex-shrink:0;}
+
+  .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    margin-bottom:18px;
+  }
+
+  .title-block h1{
+    font-family:'Playfair Display',serif;
+    font-size:24px;
+    margin:0 0 4px;
+  }
+  .title-block p{
+    margin:0;
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  .score-pill{
+    min-width:104px;
+    border-radius:999px;
+    background:var(--soft-bg);
+    padding:10px 14px;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:2px;
+  }
+  .score-label{
+    font-size:10px;
+    letter-spacing:.14em;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .score-value{
+    font-family:'Playfair Display',serif;
+    font-size:20px;
+    font-weight:600;
+    color:var(--wine);
+  }
+  .score-caption{
+    font-size:11px;
+    color:var(--muted);
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+
+  .tile{
+    border-radius:14px;
+    border:1px solid var(--line);
+    padding:12px 12px 13px;
+    background:#faf7f6;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+
+  .tile-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:6px;
+  }
+  .tile-label{
+    font-size:11px;
+    letter-spacing:.12em;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .tile-tag{
+    font-size:10px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#f1e3e2;
+    color:var(--wine);
+    font-weight:500;
+  }
+
+  .tile-main{
+    display:flex;
+    align-items:flex-end;
+    gap:6px;
+  }
+  .tile-main strong{
+    font-family:'Playfair Display',serif;
+    font-size:22px;
+    color:var(--wine);
+  }
+  .tile-main span{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .tile-note{
+    font-size:11px;
+    color:var(--muted);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M9 10h.01M15 10h.01M8 15c1 1.2 2.4 2 4 2s3-.8 4-2"/>
+    </svg>
+    WELLNESS DASHBOARD
+  </div>
+
+  <div class="top-row">
+    <div class="title-block">
+      <h1>Today</h1>
+      <p id="todayLabel">—</p>
+    </div>
+    <div class="score-pill">
+      <div class="score-label">WELLNESS SCORE</div>
+      <div class="score-value" id="scoreValue">—</div>
+      <div class="score-caption" id="scoreCaption">Soft check‑in, not a grade.</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Hydration tile -->
+    <div class="tile">
+      <div class="tile-header">
+        <span class="tile-label">HYDRATION</span>
+        <span class="tile-tag" id="hydrationTag">—</span>
+      </div>
+      <div class="tile-main">
+        <strong id="hydrationPct">0%</strong>
+        <span id="hydrationMl">0 / 0 ml</span>
+      </div>
+      <div class="tile-note" id="hydrationNote">No water logged yet.</div>
+    </div>
+
+    <!-- Placeholder tile for future (mood/sleep/etc.) -->
+    <div class="tile">
+      <div class="tile-header">
+        <span class="tile-label">COMING SOON</span>
+        <span class="tile-tag">mood · sleep</span>
+      </div>
+      <div class="tile-main">
+        <strong>—</strong>
+        <span>We’ll plug in more data here.</span>
+      </div>
+      <div class="tile-note">Once other widgets write to this dashboard, this tile will wake up.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function loadWellnessData(){
+  try{
+    const raw = localStorage.getItem('wellnessData');
+    if(!raw) return { days:{} };
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === 'object'){
+      if(!parsed.days || typeof parsed.days !== 'object'){
+        parsed.days = {};
+      }
+      return parsed;
+    }
+  }catch(e){}
+  return { days:{} };
+}
+
+const wellnessData = loadWellnessData();
+const today = new Date();
+const todayStr = today.toISOString().slice(0,10);
+const todayLabel = document.getElementById('todayLabel');
+const scoreValue = document.getElementById('scoreValue');
+const scoreCaption = document.getElementById('scoreCaption');
+
+const hydrationTag = document.getElementById('hydrationTag');
+const hydrationPctEl = document.getElementById('hydrationPct');
+const hydrationMlEl = document.getElementById('hydrationMl');
+const hydrationNote = document.getElementById('hydrationNote');
+
+// set friendly date label
+todayLabel.textContent = today.toLocaleDateString(undefined, {
+  weekday:'short',
+  month:'short',
+  day:'numeric'
+});
+
+// read hydration for today
+const dayData = wellnessData.days[todayStr] || {};
+const water = dayData.water || null;
+
+let hydrationScore = 0;
+
+if(water && typeof water.goal === 'number' && water.goal > 0){
+  const ml = typeof water.ml === 'number' && water.ml >= 0 ? water.ml : 0;
+  const pct = Math.max(0, Math.min(100, Math.round((ml / water.goal) * 100)));
+
+  hydrationPctEl.textContent = pct + '%';
+  hydrationMlEl.textContent = ml + ' / ' + water.goal + ' ml';
+
+  if(pct === 0){
+    hydrationTag.textContent = 'not yet';
+    hydrationNote.textContent = 'Your bottle is waiting. A few sips count.';
+    hydrationScore = 0;
+  }else if(pct < 40){
+    hydrationTag.textContent = 'getting started';
+    hydrationNote.textContent = 'You’ve started tending to yourself.';
+    hydrationScore = 6; // out of 20
+  }else if(pct < 80){
+    hydrationTag.textContent = 'in progress';
+    hydrationNote.textContent = 'You’re doing gently well.';
+    hydrationScore = 14;
+  }else{
+    hydrationTag.textContent = 'well hydrated';
+    hydrationNote.textContent = 'You’ve cared for your body’s basics.';
+    hydrationScore = 20;
+  }
+}else{
+  hydrationPctEl.textContent = '0%';
+  hydrationMlEl.textContent = '0 / 0 ml';
+  hydrationTag.textContent = 'no data';
+  hydrationNote.textContent = 'No water logged yet for today.';
+  hydrationScore = 0;
+}
+
+// for now, wellness score == hydrationScore only
+// later we’ll blend in mood, sleep, movement, etc.
+const totalScore = hydrationScore;
+scoreValue.textContent = totalScore + ' / 100';
+
+if(totalScore === 0){
+  scoreCaption.textContent = 'Today is for gentleness. You are still okay.';
+} else if(totalScore < 40){
+  scoreCaption.textContent = 'You’re taking small, real steps.';
+} else if(totalScore < 70){
+  scoreCaption.textContent = 'You’ve been tending to yourself nicely.';
+} else{
+  scoreCaption.textContent = 'You’re caring for yourself deeply today.';
+}
+</script>
+</body>
+</html>
