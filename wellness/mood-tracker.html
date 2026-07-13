@@ -33,7 +33,7 @@
   body{
     margin:0;
     font-family:'Inter',sans-serif;
-    background:var(--cream);
+    background:transparent;
     color:var(--ink);
     display:flex;
     justify-content:center;
@@ -222,7 +222,7 @@
     opacity:1;
   }
 
-  .day[data-mood="amazing"]{background:#f4d160;}
+  .day[data-mood="amazing"]{background:var(--amazing);}
   .day[data-mood="good"]{background:var(--good);}
   .day[data-mood="okay"]{background:var(--okay);}
   .day[data-mood="low"]{background:var(--low);color:var(--low-ink);}
@@ -331,6 +331,7 @@ const today = new Date();
 const todayYear = today.getFullYear();
 const todayMonth = today.getMonth();
 const todayDate = today.getDate();
+const todayStr = today.toISOString().slice(0,10);
 
 let viewYear = todayYear;
 let viewMonth = todayMonth;
@@ -343,6 +344,47 @@ const prevMonthBtn = document.getElementById('prevMonth');
 const nextMonthBtn = document.getElementById('nextMonth');
 const moodBtns = document.querySelectorAll('.mood-btn');
 
+// --- wellnessData helpers (shared with other widgets) ---
+function loadWellnessData(){
+  try{
+    const raw = localStorage.getItem('wellnessData');
+    if(!raw) return { days:{} };
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === 'object'){
+      if(!parsed.days || typeof parsed.days !== 'object'){
+        parsed.days = {};
+      }
+      return parsed;
+    }
+  }catch(e){}
+  return { days:{} };
+}
+
+function saveWellnessData(data){
+  try{
+    localStorage.setItem('wellnessData', JSON.stringify(data));
+  }catch(e){}
+}
+
+let wellnessData = loadWellnessData();
+
+function setTodayMoodForWellness(moodValue){
+  if(!moodValue){
+    // if clearing today entirely, remove mood
+    if(wellnessData.days[todayStr] && wellnessData.days[todayStr].mood){
+      delete wellnessData.days[todayStr].mood;
+      saveWellnessData(wellnessData);
+    }
+    return;
+  }
+  if(!wellnessData.days[todayStr]){
+    wellnessData.days[todayStr] = {};
+  }
+  wellnessData.days[todayStr].mood = { value: moodValue };
+  saveWellnessData(wellnessData);
+}
+
+// --- original mood-tracker persistence (per month/year) ---
 function getStorageKey(year, month){
   return `mood-tracker-${year}-${month}`;
 }
@@ -410,12 +452,23 @@ function buildCalendar(){
         dayMoods[d] = selectedMood;
         cell.dataset.mood = selectedMood;
         cell.innerHTML = '<span class="e">'+ MOOD_EMOJI[selectedMood] +'</span>';
+        persistMoods();
+
+        // if this is today, also update shared wellnessData
+        if(isToday){
+          setTodayMoodForWellness(selectedMood);
+        }
       }else{
+        // clear mood for this day
         delete dayMoods[d];
         delete cell.dataset.mood;
         cell.textContent = d;
+        persistMoods();
+
+        if(isToday){
+          setTodayMoodForWellness(null);
+        }
       }
-      persistMoods();
     });
 
     grid.appendChild(cell);
@@ -430,6 +483,7 @@ function setMonth(year, month){
   buildCalendar();
 }
 
+// mood button selection
 moodBtns.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const m = btn.dataset.mood;
@@ -444,6 +498,7 @@ moodBtns.forEach(btn=>{
   });
 });
 
+// month nav
 prevMonthBtn.addEventListener('click', ()=>{
   let y = viewYear;
   let m = viewMonth - 1;
@@ -464,7 +519,7 @@ nextMonthBtn.addEventListener('click', ()=>{
   setMonth(y, m);
 });
 
-// initial render: current month
+// initial render on current month
 setMonth(todayYear, todayMonth);
 </script>
 </body>
