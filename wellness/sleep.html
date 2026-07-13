@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- sleep.html -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -22,7 +23,7 @@
   body{
     margin:0;
     font-family:'Inter',sans-serif;
-    background:#d9d9d9;
+    background:transparent; /* transparent for Notion */
     color:var(--ink);
     display:flex;
     justify-content:center;
@@ -122,6 +123,11 @@
     align-items:center;
     justify-content:center;
     cursor:pointer;
+    transition:border-color .12s ease, transform .12s ease, box-shadow .12s ease;
+  }
+  .quality button:hover{
+    transform:translateY(-1px);
+    box-shadow:0 1px 3px rgba(0,0,0,0.3);
   }
   .quality button.selected{
     border-color:var(--purple);
@@ -138,8 +144,12 @@
     cursor:pointer;
     font-family:'Inter',sans-serif;
     background:linear-gradient(90deg, var(--grad1), var(--grad2));
+    transition:opacity .12s ease, transform .12s ease, box-shadow .12s ease;
   }
-  .log-btn:active{ opacity:.9; }
+  .log-btn:hover{
+    box-shadow:0 1px 4px rgba(0,0,0,0.4);
+  }
+  .log-btn:active{ opacity:.9; transform:scale(.98); }
   .log-btn.logged{ background:linear-gradient(90deg,#474747,#948f8f); }
 </style>
 </head>
@@ -183,6 +193,33 @@
 </div>
 
 <script>
+// --- shared wellness data helpers ---
+const todayStr = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+
+function loadWellnessData(){
+  try{
+    const raw = localStorage.getItem('wellnessData');
+    if(!raw) return { days:{} };
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === 'object'){
+      if(!parsed.days || typeof parsed.days !== 'object'){
+        parsed.days = {};
+      }
+      return parsed;
+    }
+  }catch(e){}
+  return { days:{} };
+}
+
+function saveWellnessData(data){
+  try{
+    localStorage.setItem('wellnessData', JSON.stringify(data));
+  }catch(e){}
+}
+
+let wellnessData = loadWellnessData();
+
+// elements
 const bedtimeEl = document.getElementById('bedtime');
 const wakeupEl = document.getElementById('wakeup');
 const hoursLabel = document.getElementById('hoursLabel');
@@ -190,6 +227,29 @@ const qualityBtns = document.querySelectorAll('#quality button');
 const logBtn = document.getElementById('logBtn');
 
 let selectedQuality = 'good';
+
+// initialize from wellnessData if present
+(function initFromWellness(){
+  const day = wellnessData.days[todayStr] || {};
+  const sleep = day.sleep || {};
+
+  if(typeof sleep.bedtime === 'string'){
+    bedtimeEl.value = sleep.bedtime;
+  }
+  if(typeof sleep.wakeup === 'string'){
+    wakeupEl.value = sleep.wakeup;
+  }
+  if(typeof sleep.hours === 'number'){
+    hoursLabel.textContent = sleep.hours.toFixed(1);
+  }
+
+  if(typeof sleep.quality === 'string'){
+    selectedQuality = sleep.quality;
+  }
+  qualityBtns.forEach(btn=>{
+    btn.classList.toggle('selected', btn.dataset.q === selectedQuality);
+  });
+})();
 
 function computeHours(){
   const [bh, bm] = bedtimeEl.value.split(':').map(Number);
@@ -201,6 +261,19 @@ function computeHours(){
   if(diff <= 0) diff += 24*60;
   const hours = diff / 60;
   hoursLabel.textContent = hours.toFixed(1);
+
+  // persist to wellnessData (but keep quality)
+  if(!wellnessData.days[todayStr]){
+    wellnessData.days[todayStr] = {};
+  }
+  const existing = wellnessData.days[todayStr].sleep || {};
+  wellnessData.days[todayStr].sleep = {
+    hours,
+    quality: existing.quality || selectedQuality,
+    bedtime: bedtimeEl.value,
+    wakeup: wakeupEl.value
+  };
+  saveWellnessData(wellnessData);
 }
 
 bedtimeEl.addEventListener('input', computeHours);
@@ -210,6 +283,22 @@ qualityBtns.forEach(btn=>{
   btn.addEventListener('click', ()=>{
     selectedQuality = btn.dataset.q;
     qualityBtns.forEach(b=>b.classList.toggle('selected', b===btn));
+
+    if(!wellnessData.days[todayStr]){
+      wellnessData.days[todayStr] = {};
+    }
+    const existing = wellnessData.days[todayStr].sleep || {};
+    const hours = typeof existing.hours === 'number'
+      ? existing.hours
+      : parseFloat(hoursLabel.textContent) || 0;
+
+    wellnessData.days[todayStr].sleep = {
+      hours,
+      quality: selectedQuality,
+      bedtime: bedtimeEl.value,
+      wakeup: wakeupEl.value
+    };
+    saveWellnessData(wellnessData);
   });
 });
 
@@ -222,6 +311,7 @@ logBtn.addEventListener('click', ()=>{
   }, 1600);
 });
 
+// ensure hours label is correct on first load
 computeHours();
 </script>
 </body>
