@@ -16,7 +16,6 @@
     --rose:#daaba6;
     --wine:#722f39;
     --charcoal:#474747;
-    --soft-bg:#f6efee;
   }
   *{box-sizing:border-box;}
   body{
@@ -70,7 +69,6 @@
     color:var(--muted);
   }
 
-  /* wellness score tile, now visually matching other tiles */
   .score-pill{
     min-width:140px;
     border-radius:14px;
@@ -193,19 +191,17 @@
       <div class="tile-note" id="hydrationNote">No water logged yet.</div>
     </div>
 
-    <!-- Placeholder tile for future (mood/sleep/etc.) -->
+    <!-- Sleep tile -->
     <div class="tile">
       <div class="tile-header">
-        <span class="tile-label">COMING SOON</span>
-        <span class="tile-tag">mood · sleep</span>
+        <span class="tile-label">SLEEP</span>
+        <span class="tile-tag" id="sleepTag">—</span>
       </div>
       <div class="tile-main">
-        <strong>—</strong>
-        <span>We’ll plug in more data here.</span>
+        <strong id="sleepHours">—</strong>
+        <span id="sleepDetail">no data</span>
       </div>
-      <div class="tile-note">
-        Once other widgets write to this dashboard, this tile will wake up.
-      </div>
+      <div class="tile-note" id="sleepNote">No sleep logged yet.</div>
     </div>
   </div>
 </div>
@@ -233,10 +229,17 @@ const todayLabel = document.getElementById('todayLabel');
 const scoreValue = document.getElementById('scoreValue');
 const scoreCaption = document.getElementById('scoreCaption');
 
+// hydration els
 const hydrationTag = document.getElementById('hydrationTag');
 const hydrationPctEl = document.getElementById('hydrationPct');
 const hydrationMlEl = document.getElementById('hydrationMl');
 const hydrationNote = document.getElementById('hydrationNote');
+
+// sleep els
+const sleepTag = document.getElementById('sleepTag');
+const sleepHoursEl = document.getElementById('sleepHours');
+const sleepDetailEl = document.getElementById('sleepDetail');
+const sleepNote = document.getElementById('sleepNote');
 
 // friendly date label
 todayLabel.textContent = today.toLocaleDateString(undefined, {
@@ -245,12 +248,14 @@ todayLabel.textContent = today.toLocaleDateString(undefined, {
   day:'numeric'
 });
 
-// read hydration for today
 const dayData = wellnessData.days[todayStr] || {};
 const water = dayData.water || null;
+const sleep = dayData.sleep || null;
 
 let hydrationScore = 0;
+let sleepScore = 0;
 
+// HYDRATION
 if(water && typeof water.goal === 'number' && water.goal > 0){
   const ml = typeof water.ml === 'number' && water.ml >= 0 ? water.ml : 0;
   const pct = Math.max(0, Math.min(100, Math.round((ml / water.goal) * 100)));
@@ -283,9 +288,66 @@ if(water && typeof water.goal === 'number' && water.goal > 0){
   hydrationScore = 0;
 }
 
-// for now, wellness score == hydrationScore only
-// later we’ll blend in mood, sleep, movement, etc.
-const totalScore = hydrationScore;
+// SLEEP
+if(sleep && typeof sleep.hours === 'number'){
+  const h = sleep.hours;
+  sleepHoursEl.textContent = h.toFixed(1) + 'h';
+
+  const quality = sleep.quality || 'okay';
+
+  // small description combining hours + quality
+  let rangeText = '';
+  if(h < 5){
+    rangeText = 'short night';
+  }else if(h < 7){
+    rangeText = 'a bit light';
+  }else if(h <= 9){
+    rangeText = 'solid rest';
+  }else{
+    rangeText = 'long rest';
+  }
+  sleepDetailEl.textContent = rangeText;
+
+  // tag based mainly on hours, gently boosted by quality
+  if(h === 0){
+    sleepTag.textContent = 'not yet';
+    sleepNote.textContent = 'No sleep window logged for last night.';
+    sleepScore = 0;
+  }else if(h < 5){
+    sleepTag.textContent = 'short night';
+    sleepNote.textContent = 'Your body may need extra softness today.';
+    sleepScore = 6;
+  }else if(h < 7){
+    sleepTag.textContent = 'light sleep';
+    sleepNote.textContent = 'You still showed up for the night.';
+    sleepScore = 12;
+  }else if(h <= 9){
+    sleepTag.textContent = 'well‑rested';
+    sleepNote.textContent = 'You gave your body real time to restore.';
+    sleepScore = 18;
+  }else{
+    sleepTag.textContent = 'deep rest';
+    sleepNote.textContent = 'Your body took the rest it needed.';
+    sleepScore = 16;
+  }
+
+  // gentle nudge for quality
+  if(quality === 'rough'){
+    sleepScore = Math.max(0, sleepScore - 3);
+  }else if(quality === 'amazing'){
+    sleepScore = Math.min(20, sleepScore + 2);
+  }
+}else{
+  sleepHoursEl.textContent = '—';
+  sleepDetailEl.textContent = 'no data';
+  sleepTag.textContent = 'no data';
+  sleepNote.textContent = 'No sleep logged yet for last night.';
+  sleepScore = 0;
+}
+
+// For now, wellness score = hydration (max 20) + sleep (max 20)
+// Later we’ll add mood, movement, journaling, etc.
+const totalScore = hydrationScore + sleepScore;
 scoreValue.textContent = totalScore + ' / 100';
 
 if(totalScore === 0){
@@ -295,4 +357,8 @@ if(totalScore === 0){
 } else if(totalScore < 70){
   scoreCaption.textContent = 'You’ve been tending to yourself nicely.';
 } else{
-  scoreCaption.textContent = 'You’re caring for
+  scoreCaption.textContent = 'You’re caring for yourself deeply today.';
+}
+</script>
+</body>
+</html>
