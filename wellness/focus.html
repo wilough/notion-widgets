@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!-- focus.html -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily focus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --card:#ffffff;
+    --ink:#474747;
+    --muted:#948f8f;
+    --line:#e2dcdc;
+    --rose:#daaba6;
+    --wine:#722f39;
+    --chip-bg:#f6efee;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    background:transparent;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    padding:24px 12px;
+  }
+  .card{
+    width:100%;
+    max-width:420px;
+    background:var(--card);
+    border-radius:20px;
+    padding:24px 22px 26px;
+    box-shadow:0 1px 2px rgba(0,0,0,0.03);
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:11px;
+    letter-spacing:.18em;
+    font-weight:600;
+    color:var(--muted);
+    padding-bottom:12px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:16px;
+  }
+  .eyebrow svg{width:14px;height:14px;flex-shrink:0;}
+
+  h1{
+    font-family:'Playfair Display',serif;
+    font-size:24px;
+    margin:0 0 4px;
+  }
+  .sub{
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 18px;
+  }
+
+  .inputs{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .focus-row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .bullet{
+    width:18px;
+    height:18px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    color:var(--muted);
+    flex-shrink:0;
+  }
+  .focus-input{
+    flex:1;
+    border-radius:12px;
+    border:1px solid var(--line);
+    padding:8px 11px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+    outline:none;
+  }
+  .focus-input::placeholder{
+    color:#c0baba;
+  }
+
+  .today-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:var(--chip-bg);
+    border-radius:999px;
+    padding:6px 10px;
+    font-size:11px;
+    font-weight:500;
+    color:var(--wine);
+    margin-bottom:10px;
+  }
+  .today-chip span.e{
+    font-size:14px;
+  }
+
+  .note{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+
+  .save-btn{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:11px 14px;
+    margin-top:8px;
+    font-size:14px;
+    font-weight:600;
+    color:#ffffff;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    background:linear-gradient(90deg, #722f39, #daaba6);
+    transition:opacity .12s ease, transform .12s ease, box-shadow .12s ease;
+  }
+  .save-btn:hover{
+    box-shadow:0 1px 3px rgba(0,0,0,0.1);
+  }
+  .save-btn:active{
+    opacity:.95;
+    transform:scale(.98);
+  }
+  .save-btn.saved{
+    background:linear-gradient(90deg,#948f8f,#c8c1c0);
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M9 10h.01M15 10h.01M8 15c1 1.2 2.4 2 4 2s3-.8 4-2"/>
+    </svg>
+    DAILY FOCUS
+  </div>
+
+  <h1>Today I will…</h1>
+  <p class="sub">Set up to three soft focuses for today.</p>
+
+  <div class="today-chip" id="todayChip">
+    <span class="e">📌</span>
+    <span id="todayLabel">Today</span>
+  </div>
+
+  <div class="inputs">
+    <div class="focus-row">
+      <div class="bullet">1</div>
+      <input class="focus-input" id="focus1" placeholder="Your first, most gentle priority">
+    </div>
+    <div class="focus-row">
+      <div class="bullet">2</div>
+      <input class="focus-input" id="focus2" placeholder="Optional second focus">
+    </div>
+    <div class="focus-row">
+      <div class="bullet">3</div>
+      <input class="focus-input" id="focus3" placeholder="Optional third focus">
+    </div>
+  </div>
+
+  <button class="save-btn" id="saveBtn">Save today’s focus</button>
+  <p class="note">This only lives in this browser. It’s here to support you, not judge you.</p>
+</div>
+
+<script>
+const today = new Date();
+const todayStr = today.toISOString().slice(0,10); // YYYY-MM-DD
+
+function loadWellnessData(){
+  try{
+    const raw = localStorage.getItem('wellnessData');
+    if(!raw) return { days:{} };
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === 'object'){
+      if(!parsed.days || typeof parsed.days !== 'object'){
+        parsed.days = {};
+      }
+      return parsed;
+    }
+  }catch(e){}
+  return { days:{} };
+}
+
+function saveWellnessData(data){
+  try{
+    localStorage.setItem('wellnessData', JSON.stringify(data));
+  }catch(e){}
+}
+
+let wellnessData = loadWellnessData();
+
+const todayLabel = document.getElementById('todayLabel');
+todayLabel.textContent = today.toLocaleDateString(undefined, {
+  weekday:'short',
+  month:'short',
+  day:'numeric'
+});
+
+const f1 = document.getElementById('focus1');
+const f2 = document.getElementById('focus2');
+const f3 = document.getElementById('focus3');
+const saveBtn = document.getElementById('saveBtn');
+
+// load existing focus if present
+(function initFromWellness(){
+  const day = wellnessData.days[todayStr] || {};
+  const focus = day.focus || {};
+  const items = Array.isArray(focus.items) ? focus.items : [];
+
+  f1.value = items[0] || '';
+  f2.value = items[1] || '';
+  f3.value = items[2] || '';
+})();
+
+function saveFocus(){
+  const items = [f1.value.trim(), f2.value.trim(), f3.value.trim()]
+    .filter(Boolean)
+    .slice(0,3);
+
+  if(!wellnessData.days[todayStr]){
+    wellnessData.days[todayStr] = {};
+  }
+  wellnessData.days[todayStr].focus = { items };
+  saveWellnessData(wellnessData);
+
+  saveBtn.textContent = 'Saved for today ✓';
+  saveBtn.classList.add('saved');
+  setTimeout(()=>{
+    saveBtn.textContent = 'Save today’s focus';
+    saveBtn.classList.remove('saved');
+  }, 1600);
+}
+
+saveBtn.addEventListener('click', saveFocus);
+
+// also save on blur for gentle persistence
+[f1, f2, f3].forEach(input=>{
+  input.addEventListener('blur', saveFocus);
+});
+</script>
+</body>
+</html>
