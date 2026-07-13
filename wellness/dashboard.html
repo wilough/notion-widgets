@@ -70,11 +70,13 @@
     color:var(--muted);
   }
 
+  /* wellness score tile, now visually matching other tiles */
   .score-pill{
-    min-width:104px;
-    border-radius:999px;
-    background:var(--soft-bg);
-    padding:10px 14px;
+    min-width:140px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#faf7f6;
+    padding:10px 12px 11px;
     display:flex;
     flex-direction:column;
     align-items:flex-start;
@@ -201,7 +203,9 @@
         <strong>—</strong>
         <span>We’ll plug in more data here.</span>
       </div>
-      <div class="tile-note">Once other widgets write to this dashboard, this tile will wake up.</div>
+      <div class="tile-note">
+        Once other widgets write to this dashboard, this tile will wake up.
+      </div>
     </div>
   </div>
 </div>
@@ -234,7 +238,7 @@ const hydrationPctEl = document.getElementById('hydrationPct');
 const hydrationMlEl = document.getElementById('hydrationMl');
 const hydrationNote = document.getElementById('hydrationNote');
 
-// set friendly date label
+// friendly date label
 todayLabel.textContent = today.toLocaleDateString(undefined, {
   weekday:'short',
   month:'short',
@@ -291,8 +295,4 @@ if(totalScore === 0){
 } else if(totalScore < 70){
   scoreCaption.textContent = 'You’ve been tending to yourself nicely.';
 } else{
-  scoreCaption.textContent = 'You’re caring for yourself deeply today.';
-}
-</script>
-</body>
-</html>
+  scoreCaption.textContent = 'You’re caring for
