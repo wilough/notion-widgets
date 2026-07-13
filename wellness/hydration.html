@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- hydration.html -->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -23,7 +24,8 @@
   body{
     margin:0;
     font-family:'Inter',sans-serif;
-    background:var(--cream);
+    /* transparent so Notion background can show through */
+    background:transparent;
     color:var(--ink);
     display:flex;
     justify-content:center;
@@ -88,6 +90,11 @@
     align-items:center;
     justify-content:center;
     cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  .glass:hover{
+    transform:translateY(-1px);
+    box-shadow:0 1px 3px rgba(0,0,0,0.07);
   }
   .glass.filled{ background:var(--blue); }
   .glass svg{ width:20px; height:20px; }
@@ -118,8 +125,15 @@
     color:#ffffff;
     cursor:pointer;
     font-family:'Inter',sans-serif;
+    transition:opacity .12s ease, transform .12s ease, box-shadow .12s ease;
   }
-  .goal-row button:active{ opacity:.85; }
+  .goal-row button:hover{
+    box-shadow:0 1px 3px rgba(0,0,0,0.08);
+  }
+  .goal-row button:active{
+    opacity:.85;
+    transform:scale(.97);
+  }
 </style>
 </head>
 <body>
@@ -149,15 +163,43 @@
   <div class="glasses" id="glasses"></div>
 
   <div class="goal-row">
-    <input type="number" id="goalInput" value="1500">
+    <input type="number" id="goalInput" value="1500" min="1">
     <button id="setBtn">Set</button>
   </div>
 </div>
 
 <script>
 const glassCount = 6;
+
+// --- shared wellness data helpers ---
+const todayStr = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+
+function loadWellnessData(){
+  try{
+    const raw = localStorage.getItem('wellnessData');
+    if(!raw) return { days:{} };
+    const parsed = JSON.parse(raw);
+    if(parsed && typeof parsed === 'object'){
+      if(!parsed.days || typeof parsed.days !== 'object'){
+        parsed.days = {};
+      }
+      return parsed;
+    }
+  }catch(e){}
+  return { days:{} };
+}
+
+function saveWellnessData(data){
+  try{
+    localStorage.setItem('wellnessData', JSON.stringify(data));
+  }catch(e){}
+}
+
+let wellnessData = loadWellnessData();
+
+// --- widget state derived from wellnessData ---
 let goal = 1500;
-let filled = 0;
+let filled = 0; // glasses filled (0-6)
 
 const glassesEl = document.getElementById('glasses');
 const pctLabel = document.getElementById('pctLabel');
@@ -166,51 +208,90 @@ const waterFill = document.getElementById('waterFill');
 const goalInput = document.getElementById('goalInput');
 const setBtn = document.getElementById('setBtn');
 
+// initialize from existing wellness data if present
+(function initFromWellness(){
+  const day = wellnessData.days[todayStr] || {};
+  const water = day.water || {};
+  if(typeof water.goal === 'number' && water.goal > 0){
+    goal = water.goal;
+  }
+  const ml = typeof water.ml === 'number' && water.ml >= 0 ? water.ml : 0;
+  const perGlass = goal / glassCount;
+  filled = perGlass > 0 ? Math.round(ml / perGlass) : 0;
+  if(filled < 0) filled = 0;
+  if(filled > glassCount) filled = glassCount;
+
+  goalInput.value = goal;
+})();
+
 function glassSvg(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l-1.5 15a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2L6 3z"/><path d="M6 8h12"/></svg>';
 }
 
-function render(){
+function renderGlasses(){
   glassesEl.innerHTML = '';
   for(let i=0;i<glassCount;i++){
     const g = document.createElement('div');
-    g.className = 'glass' + (i < filled ? ' filled' : '');
-    g.style.color = i < filled ? '#722f39' : '#daaba6';
+    const isFilled = i < filled;
+    g.className = 'glass' + (isFilled ? ' filled' : '');
+    g.style.color = isFilled ? '#f6e8e9' : '#daaba6';
     g.innerHTML = glassSvg();
     g.addEventListener('click', ()=>{
+      // toggle this and all after it
       if(i < filled){
+        // clicking an already-filled glass lowers the count to this index
         filled = i;
-      } else {
+      }else{
         filled = i + 1;
       }
-      update();
+      updateHydration();
     });
     glassesEl.appendChild(g);
   }
 }
 
-function update(){
+function updateHydration(){
   const perGlass = goal / glassCount;
   const ml = Math.round(filled * perGlass);
-  const pct = Math.round((ml / goal) * 100);
+  const pct = goal > 0 ? Math.round((ml / goal) * 100) : 0;
+
   pctLabel.textContent = pct + '%';
   amtLabel.textContent = ml + ' / ' + goal + ' ml';
-  waterFill.setAttribute('height', (pct/100 * 148));
-  waterFill.setAttribute('y', 156 - (pct/100 * 148));
-  render();
+
+  const maxHeight = 148; // from SVG path height
+  const h = Math.max(0, Math.min(maxHeight, (pct/100) * maxHeight));
+  waterFill.setAttribute('height', h);
+  waterFill.setAttribute('y', 156 - h);
+
+  // update wellnessData
+  if(!wellnessData.days[todayStr]){
+    wellnessData.days[todayStr] = {};
+  }
+  wellnessData.days[todayStr].water = { goal, ml };
+  saveWellnessData(wellnessData);
+
+  renderGlasses();
 }
 
 setBtn.addEventListener('click', ()=>{
   const v = parseInt(goalInput.value, 10);
   if(v && v > 0){
     goal = v;
+    // recompute filled based on previous ml, if we have it
+    const day = wellnessData.days[todayStr] || {};
+    const water = day.water || {};
+    const ml = typeof water.ml === 'number' && water.ml >= 0 ? water.ml : Math.round((goal/glassCount) * filled);
+    const perGlass = goal / glassCount;
+    filled = perGlass > 0 ? Math.round(ml / perGlass) : 0;
+    if(filled < 0) filled = 0;
     if(filled > glassCount) filled = glassCount;
-    update();
+    updateHydration();
   }
 });
 
-render();
-update();
+// initial paint
+renderGlasses();
+updateHydration();
 </script>
 </body>
 </html>
