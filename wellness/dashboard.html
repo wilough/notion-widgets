@@ -25,159 +25,159 @@
     color:var(--ink);
     display:flex;
     justify-content:center;
-    padding:24px 12px;
+    padding:12px;
   }
   .card{
     width:100%;
-    max-width:520px;
+    max-width:980px;
     background:var(--card);
-    border-radius:20px;
-    padding:24px 22px 26px;
+    border-radius:18px;
+    padding:14px 16px;
     box-shadow:0 1px 2px rgba(0,0,0,0.03);
+    display:flex;
+    align-items:stretch;
+    gap:10px;
+  }
+
+  .left-stack{
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    gap:6px;
+    min-width:190px;
   }
 
   .eyebrow{
     display:flex;
     align-items:center;
-    gap:8px;
-    font-size:11px;
+    gap:6px;
+    font-size:10px;
     letter-spacing:.18em;
     font-weight:600;
     color:var(--muted);
-    padding-bottom:10px;
-    border-bottom:1px solid var(--line);
-    margin-bottom:16px;
   }
-  .eyebrow svg{width:14px;height:14px;flex-shrink:0;}
+  .eyebrow svg{width:13px;height:13px;flex-shrink:0;}
 
-  .top-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:12px;
-    margin-bottom:18px;
-  }
-
-  .title-block h1{
+  .today-label{
     font-family:'Playfair Display',serif;
-    font-size:24px;
-    margin:0 0 4px;
-  }
-  .title-block p{
+    font-size:18px;
     margin:0;
-    font-size:13px;
+  }
+  .today-sub{
+    margin:0;
+    font-size:12px;
     color:var(--muted);
   }
 
   .score-pill{
-    min-width:150px;
     border-radius:14px;
     border:1px solid var(--line);
     background:#faf7f6;
-    padding:10px 12px 11px;
+    padding:8px 10px;
     display:flex;
     flex-direction:column;
     align-items:flex-start;
     gap:2px;
   }
   .score-label{
-    font-size:10px;
+    font-size:9px;
     letter-spacing:.14em;
     font-weight:600;
     color:var(--muted);
   }
   .score-value{
     font-family:'Playfair Display',serif;
-    font-size:20px;
+    font-size:18px;
     font-weight:600;
     color:var(--wine);
   }
   .score-caption{
-    font-size:11px;
+    font-size:10px;
     color:var(--muted);
   }
 
-  .grid{
-    display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:10px;
+  .right-row{
+    flex:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:stretch;
+    justify-content:flex-end;
   }
 
   .tile{
     border-radius:14px;
     border:1px solid var(--line);
-    padding:12px 12px 13px;
+    padding:8px 9px 9px;
     background:#faf7f6;
     display:flex;
     flex-direction:column;
-    gap:6px;
+    gap:4px;
+    min-width:150px;
+    max-width:190px;
+    flex:1 1 150px;
   }
 
   .tile-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:6px;
+    gap:4px;
   }
   .tile-label{
-    font-size:11px;
+    font-size:10px;
     letter-spacing:.12em;
     font-weight:600;
     color:var(--muted);
   }
   .tile-tag{
-    font-size:10px;
-    padding:3px 8px;
+    font-size:9px;
+    padding:2px 7px;
     border-radius:999px;
     background:#f1e3e2;
     color:var(--wine);
     font-weight:500;
+    white-space:nowrap;
   }
 
   .tile-main{
     display:flex;
     align-items:flex-end;
-    gap:6px;
+    gap:4px;
   }
   .tile-main strong{
     font-family:'Playfair Display',serif;
-    font-size:22px;
+    font-size:18px;
     color:var(--wine);
   }
   .tile-main span{
-    font-size:12px;
+    font-size:11px;
     color:var(--muted);
   }
 
   .tile-note{
-    font-size:11px;
+    font-size:10px;
     color:var(--muted);
   }
 
   .mood-emoji{
-    font-size:22px;
-  }
-
-  .focus-list{
-    font-size:11px;
-    color:var(--muted);
+    font-size:18px;
   }
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="eyebrow">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="9"/>
-      <path d="M9 10h.01M15 10h.01M8 15c1 1.2 2.4 2 4 2s3-.8 4-2"/>
-    </svg>
-    WELLNESS DASHBOARD
-  </div>
-
-  <div class="top-row">
-    <div class="title-block">
-      <h1>Today</h1>
-      <p id="todayLabel">—</p>
+  <div class="left-stack">
+    <div>
+      <div class="eyebrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9 10h.01M15 10h.01M8 15c1 1.2 2.4 2 4 2s3-.8 4-2"/>
+        </svg>
+        WELLNESS
+      </div>
+      <p class="today-label">Today</p>
+      <p class="today-sub" id="todayLabel">—</p>
     </div>
     <div class="score-pill">
       <div class="score-label">WELLNESS SCORE</div>
@@ -186,7 +186,7 @@
     </div>
   </div>
 
-  <div class="grid">
+  <div class="right-row">
     <!-- Hydration tile -->
     <div class="tile">
       <div class="tile-header">
@@ -462,13 +462,12 @@ if(focus && Array.isArray(focus.items) && focus.items.length > 0){
   const preview = focus.items[0];
   if(count === 1){
     focusTag.textContent = 'single focus';
-    focusNote.textContent = 'You chose one gentle anchor for today: “' + preview + '”.';
+    focusNote.textContent = 'One gentle anchor for today: “' + preview + '”.';
   }else{
     focusTag.textContent = 'top ' + count;
     focusNote.textContent = 'First focus: “' + preview + '”.';
   }
 
-  // soft scoring: 1–3 items → up to 10
   if(count === 1){
     focusScore = 6;
   }else if(count === 2){
