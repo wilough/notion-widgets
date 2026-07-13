@@ -29,7 +29,7 @@
   }
   .card{
     width:100%;
-    max-width:480px;
+    max-width:520px;
     background:var(--card);
     border-radius:20px;
     padding:24px 22px 26px;
@@ -70,7 +70,7 @@
   }
 
   .score-pill{
-    min-width:140px;
+    min-width:150px;
     border-radius:14px;
     border:1px solid var(--line);
     background:#faf7f6;
@@ -99,7 +99,7 @@
 
   .grid{
     display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
+    grid-template-columns:repeat(3,minmax(0,1fr));
     gap:10px;
   }
 
@@ -153,6 +153,10 @@
     font-size:11px;
     color:var(--muted);
   }
+
+  .mood-emoji{
+    font-size:22px;
+  }
 </style>
 </head>
 <body>
@@ -203,6 +207,19 @@
       </div>
       <div class="tile-note" id="sleepNote">No sleep logged yet.</div>
     </div>
+
+    <!-- Mood tile -->
+    <div class="tile">
+      <div class="tile-header">
+        <span class="tile-label">MOOD</span>
+        <span class="tile-tag" id="moodTag">—</span>
+      </div>
+      <div class="tile-main">
+        <strong id="moodEmoji" class="mood-emoji">—</strong>
+        <span id="moodLabel">no entry yet</span>
+      </div>
+      <div class="tile-note" id="moodNote">You haven’t painted today’s mood yet.</div>
+    </div>
   </div>
 </div>
 
@@ -221,6 +238,22 @@ function loadWellnessData(){
   }catch(e){}
   return { days:{} };
 }
+
+const MOOD_EMOJI = {
+  amazing:'☀',
+  good:'😊',
+  okay:'😐',
+  low:'😟',
+  rough:'😣'
+};
+
+const MOOD_LABEL = {
+  amazing:'Amazing',
+  good:'Good',
+  okay:'Okay',
+  low:'Low',
+  rough:'Rough'
+};
 
 const wellnessData = loadWellnessData();
 const today = new Date();
@@ -241,6 +274,12 @@ const sleepHoursEl = document.getElementById('sleepHours');
 const sleepDetailEl = document.getElementById('sleepDetail');
 const sleepNote = document.getElementById('sleepNote');
 
+// mood els
+const moodTag = document.getElementById('moodTag');
+const moodEmojiEl = document.getElementById('moodEmoji');
+const moodLabelEl = document.getElementById('moodLabel');
+const moodNote = document.getElementById('moodNote');
+
 // friendly date label
 todayLabel.textContent = today.toLocaleDateString(undefined, {
   weekday:'short',
@@ -251,9 +290,11 @@ todayLabel.textContent = today.toLocaleDateString(undefined, {
 const dayData = wellnessData.days[todayStr] || {};
 const water = dayData.water || null;
 const sleep = dayData.sleep || null;
+const mood = dayData.mood || null;
 
 let hydrationScore = 0;
 let sleepScore = 0;
+let moodScore = 0;
 
 // HYDRATION
 if(water && typeof water.goal === 'number' && water.goal > 0){
@@ -295,7 +336,6 @@ if(sleep && typeof sleep.hours === 'number'){
 
   const quality = sleep.quality || 'okay';
 
-  // small description combining hours + quality
   let rangeText = '';
   if(h < 5){
     rangeText = 'short night';
@@ -308,7 +348,6 @@ if(sleep && typeof sleep.hours === 'number'){
   }
   sleepDetailEl.textContent = rangeText;
 
-  // tag based mainly on hours, gently boosted by quality
   if(h === 0){
     sleepTag.textContent = 'not yet';
     sleepNote.textContent = 'No sleep window logged for last night.';
@@ -331,7 +370,6 @@ if(sleep && typeof sleep.hours === 'number'){
     sleepScore = 16;
   }
 
-  // gentle nudge for quality
   if(quality === 'rough'){
     sleepScore = Math.max(0, sleepScore - 3);
   }else if(quality === 'amazing'){
@@ -345,20 +383,23 @@ if(sleep && typeof sleep.hours === 'number'){
   sleepScore = 0;
 }
 
-// For now, wellness score = hydration (max 20) + sleep (max 20)
-// Later we’ll add mood, movement, journaling, etc.
-const totalScore = hydrationScore + sleepScore;
-scoreValue.textContent = totalScore + ' / 100';
+// MOOD
+if(mood && typeof mood.value === 'string'){
+  const val = mood.value;
+  const emoji = MOOD_EMOJI[val] || '●';
+  const label = MOOD_LABEL[val] || 'Set';
 
-if(totalScore === 0){
-  scoreCaption.textContent = 'Today is for gentleness. You are still okay.';
-} else if(totalScore < 40){
-  scoreCaption.textContent = 'You’re taking small, real steps.';
-} else if(totalScore < 70){
-  scoreCaption.textContent = 'You’ve been tending to yourself nicely.';
-} else{
-  scoreCaption.textContent = 'You’re caring for yourself deeply today.';
-}
-</script>
-</body>
-</html>
+  moodEmojiEl.textContent = emoji;
+  moodLabelEl.textContent = label;
+
+  if(val === 'amazing'){
+    moodTag.textContent = 'bright day';
+    moodNote.textContent = 'You’re feeling warmly resourced today.';
+    moodScore = 20;
+  }else if(val === 'good'){
+    moodTag.textContent = 'good day';
+    moodNote.textContent = 'You’re moving through today with steadiness.';
+    moodScore = 16;
+  }else if(val === 'okay'){
+    moodTag.textContent = 'okay is enough';
+    moodNote.textContent = 'An okay
