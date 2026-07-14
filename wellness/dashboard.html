@@ -27,12 +27,13 @@
     justify-content:center;
     padding:12px;
   }
+
   .card{
     width:100%;
     max-width:980px;
     background:var(--card);
     border-radius:18px;
-    padding:14px 16px;
+    padding:12px 14px;
     box-shadow:0 1px 2px rgba(0,0,0,0.03);
     display:flex;
     align-items:stretch;
@@ -69,53 +70,24 @@
     color:var(--muted);
   }
 
-  .score-pill{
-    border-radius:14px;
-    border:1px solid var(--line);
-    background:#faf7f6;
-    padding:8px 10px;
-    display:flex;
-    flex-direction:column;
-    align-items:flex-start;
-    gap:2px;
-  }
-  .score-label{
-    font-size:9px;
-    letter-spacing:.14em;
-    font-weight:600;
-    color:var(--muted);
-  }
-  .score-value{
-    font-family:'Playfair Display',serif;
-    font-size:18px;
-    font-weight:600;
-    color:var(--wine);
-  }
-  .score-caption{
-    font-size:10px;
-    color:var(--muted);
-  }
-
-  .right-row{
-    flex:1;
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    align-items:stretch;
-    justify-content:flex-end;
-  }
-
+  /* Shared tile style for ALL rectangles, including score */
   .tile{
     border-radius:14px;
     border:1px solid var(--line);
-    padding:8px 9px 9px;
     background:#faf7f6;
+    padding:8px 10px 9px;
     display:flex;
     flex-direction:column;
-    gap:4px;
-    min-width:150px;
-    max-width:190px;
-    flex:1 1 150px;
+    justify-content:space-between;
+    gap:6px;
+    min-width:160px;
+    max-width:200px;
+    flex:1 1 160px;
+  }
+
+  .score-tile{
+    min-width:190px;
+    max-width:220px;
   }
 
   .tile-header{
@@ -160,6 +132,32 @@
     color:var(--muted);
   }
 
+  .score-label{
+    font-size:9px;
+    letter-spacing:.14em;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .score-value{
+    font-family:'Playfair Display',serif;
+    font-size:18px;
+    font-weight:600;
+    color:var(--wine);
+  }
+  .score-caption{
+    font-size:10px;
+    color:var(--muted);
+  }
+
+  .right-row{
+    flex:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:stretch;
+    justify-content:flex-end;
+  }
+
   .mood-emoji{
     font-size:18px;
   }
@@ -179,10 +177,20 @@
       <p class="today-label">Today</p>
       <p class="today-sub" id="todayLabel">—</p>
     </div>
-    <div class="score-pill">
-      <div class="score-label">WELLNESS SCORE</div>
-      <div class="score-value" id="scoreValue">—</div>
-      <div class="score-caption" id="scoreCaption">Soft check‑in, not a grade.</div>
+
+    <!-- Wellness score uses the same rectangle style -->
+    <div class="tile score-tile">
+      <div class="tile-header">
+        <span class="tile-label">WELLNESS SCORE</span>
+        <span class="tile-tag">soft</span>
+      </div>
+      <div class="tile-main">
+        <strong id="scoreValue">—</strong>
+        <span>/ 100</span>
+      </div>
+      <div class="tile-note" id="scoreCaption">
+        Soft check‑in, not a grade.
+      </div>
     </div>
   </div>
 
@@ -260,7 +268,7 @@ function loadWellnessData(){
 }
 
 const MOOD_EMOJI = {
-  amazing:'☀️',
+  amazing:'☀',
   good:'😊',
   okay:'😐',
   low:'😟',
