@@ -33,7 +33,7 @@
     max-width:980px;
     background:var(--card);
     border-radius:18px;
-    padding:12px 14px;
+    padding:10px 12px;
     box-shadow:0 1px 2px rgba(0,0,0,0.03);
     display:flex;
     align-items:stretch;
@@ -44,7 +44,7 @@
     display:flex;
     flex-direction:column;
     justify-content:space-between;
-    gap:6px;
+    gap:4px;
     min-width:190px;
   }
 
@@ -70,24 +70,23 @@
     color:var(--muted);
   }
 
-  /* Shared tile style for ALL rectangles, including score */
   .tile{
     border-radius:14px;
     border:1px solid var(--line);
     background:#faf7f6;
-    padding:8px 10px 9px;
+    padding:6px 9px;
     display:flex;
     flex-direction:column;
-    justify-content:space-between;
-    gap:6px;
-    min-width:160px;
-    max-width:200px;
-    flex:1 1 160px;
+    justify-content:center;
+    gap:4px;
+    min-width:140px;
+    flex:1 1 0;
+    height:90px;
   }
 
   .score-tile{
     min-width:190px;
-    max-width:220px;
+    max-width:230px;
   }
 
   .tile-header{
@@ -97,7 +96,7 @@
     gap:4px;
   }
   .tile-label{
-    font-size:10px;
+    font-size:9px;
     letter-spacing:.12em;
     font-weight:600;
     color:var(--muted);
@@ -130,6 +129,9 @@
   .tile-note{
     font-size:10px;
     color:var(--muted);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
 
   .score-label{
@@ -147,12 +149,15 @@
   .score-caption{
     font-size:10px;
     color:var(--muted);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
 
   .right-row{
     flex:1;
     display:flex;
-    flex-wrap:wrap;
+    flex-wrap:nowrap;
     gap:8px;
     align-items:stretch;
     justify-content:flex-end;
@@ -160,6 +165,15 @@
 
   .mood-emoji{
     font-size:18px;
+  }
+
+  @media (max-width:800px){
+    .card{
+      flex-direction:column;
+    }
+    .right-row{
+      flex-wrap:wrap;
+    }
   }
 </style>
 </head>
@@ -178,332 +192,6 @@
       <p class="today-sub" id="todayLabel">—</p>
     </div>
 
-    <!-- Wellness score uses the same rectangle style -->
     <div class="tile score-tile">
       <div class="tile-header">
-        <span class="tile-label">WELLNESS SCORE</span>
-        <span class="tile-tag">soft</span>
-      </div>
-      <div class="tile-main">
-        <strong id="scoreValue">—</strong>
-        <span>/ 100</span>
-      </div>
-      <div class="tile-note" id="scoreCaption">
-        Soft check‑in, not a grade.
-      </div>
-    </div>
-  </div>
-
-  <div class="right-row">
-    <!-- Hydration tile -->
-    <div class="tile">
-      <div class="tile-header">
-        <span class="tile-label">HYDRATION</span>
-        <span class="tile-tag" id="hydrationTag">—</span>
-      </div>
-      <div class="tile-main">
-        <strong id="hydrationPct">0%</strong>
-        <span id="hydrationMl">0 / 0 ml</span>
-      </div>
-      <div class="tile-note" id="hydrationNote">No water logged yet.</div>
-    </div>
-
-    <!-- Sleep tile -->
-    <div class="tile">
-      <div class="tile-header">
-        <span class="tile-label">SLEEP</span>
-        <span class="tile-tag" id="sleepTag">—</span>
-      </div>
-      <div class="tile-main">
-        <strong id="sleepHours">—</strong>
-        <span id="sleepDetail">no data</span>
-      </div>
-      <div class="tile-note" id="sleepNote">No sleep logged yet.</div>
-    </div>
-
-    <!-- Mood tile -->
-    <div class="tile">
-      <div class="tile-header">
-        <span class="tile-label">MOOD</span>
-        <span class="tile-tag" id="moodTag">—</span>
-      </div>
-      <div class="tile-main">
-        <strong id="moodEmoji" class="mood-emoji">—</strong>
-        <span id="moodLabel">no entry yet</span>
-      </div>
-      <div class="tile-note" id="moodNote">You haven’t painted today’s mood yet.</div>
-    </div>
-
-    <!-- Focus tile -->
-    <div class="tile">
-      <div class="tile-header">
-        <span class="tile-label">FOCUS</span>
-        <span class="tile-tag" id="focusTag">—</span>
-      </div>
-      <div class="tile-main">
-        <strong id="focusCount">0</strong>
-        <span id="focusLabel">items set</span>
-      </div>
-      <div class="tile-note" id="focusNote">
-        No focuses set yet for today.
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-function loadWellnessData(){
-  try{
-    const raw = localStorage.getItem('wellnessData');
-    if(!raw) return { days:{} };
-    const parsed = JSON.parse(raw);
-    if(parsed && typeof parsed === 'object'){
-      if(!parsed.days || typeof parsed.days !== 'object'){
-        parsed.days = {};
-      }
-      return parsed;
-    }
-  }catch(e){}
-  return { days:{} };
-}
-
-const MOOD_EMOJI = {
-  amazing:'☀',
-  good:'😊',
-  okay:'😐',
-  low:'😟',
-  rough:'😣'
-};
-
-const MOOD_LABEL = {
-  amazing:'Amazing',
-  good:'Good',
-  okay:'Okay',
-  low:'Low',
-  rough:'Rough'
-};
-
-const wellnessData = loadWellnessData();
-const today = new Date();
-const todayStr = today.toISOString().slice(0,10);
-const todayLabel = document.getElementById('todayLabel');
-const scoreValue = document.getElementById('scoreValue');
-const scoreCaption = document.getElementById('scoreCaption');
-
-// hydration els
-const hydrationTag = document.getElementById('hydrationTag');
-const hydrationPctEl = document.getElementById('hydrationPct');
-const hydrationMlEl = document.getElementById('hydrationMl');
-const hydrationNote = document.getElementById('hydrationNote');
-
-// sleep els
-const sleepTag = document.getElementById('sleepTag');
-const sleepHoursEl = document.getElementById('sleepHours');
-const sleepDetailEl = document.getElementById('sleepDetail');
-const sleepNote = document.getElementById('sleepNote');
-
-// mood els
-const moodTag = document.getElementById('moodTag');
-const moodEmojiEl = document.getElementById('moodEmoji');
-const moodLabelEl = document.getElementById('moodLabel');
-const moodNote = document.getElementById('moodNote');
-
-// focus els
-const focusTag = document.getElementById('focusTag');
-const focusCountEl = document.getElementById('focusCount');
-const focusLabelEl = document.getElementById('focusLabel');
-const focusNote = document.getElementById('focusNote');
-
-// friendly date label
-todayLabel.textContent = today.toLocaleDateString(undefined, {
-  weekday:'short',
-  month:'short',
-  day:'numeric'
-});
-
-const dayData = wellnessData.days[todayStr] || {};
-const water = dayData.water || null;
-const sleep = dayData.sleep || null;
-const mood = dayData.mood || null;
-const focus = dayData.focus || null;
-
-let hydrationScore = 0;
-let sleepScore = 0;
-let moodScore = 0;
-let focusScore = 0;
-
-// HYDRATION
-if(water && typeof water.goal === 'number' && water.goal > 0){
-  const ml = typeof water.ml === 'number' && water.ml >= 0 ? water.ml : 0;
-  const pct = Math.max(0, Math.min(100, Math.round((ml / water.goal) * 100)));
-
-  hydrationPctEl.textContent = pct + '%';
-  hydrationMlEl.textContent = ml + ' / ' + water.goal + ' ml';
-
-  if(pct === 0){
-    hydrationTag.textContent = 'not yet';
-    hydrationNote.textContent = 'Your bottle is waiting. A few sips count.';
-    hydrationScore = 0;
-  }else if(pct < 40){
-    hydrationTag.textContent = 'getting started';
-    hydrationNote.textContent = 'You’ve started tending to yourself.';
-    hydrationScore = 6;
-  }else if(pct < 80){
-    hydrationTag.textContent = 'in progress';
-    hydrationNote.textContent = 'You’re doing gently well.';
-    hydrationScore = 14;
-  }else{
-    hydrationTag.textContent = 'well hydrated';
-    hydrationNote.textContent = 'You’ve cared for your body’s basics.';
-    hydrationScore = 20;
-  }
-}else{
-  hydrationPctEl.textContent = '0%';
-  hydrationMlEl.textContent = '0 / 0 ml';
-  hydrationTag.textContent = 'no data';
-  hydrationNote.textContent = 'No water logged yet for today.';
-  hydrationScore = 0;
-}
-
-// SLEEP
-if(sleep && typeof sleep.hours === 'number'){
-  const h = sleep.hours;
-  sleepHoursEl.textContent = h.toFixed(1) + 'h';
-
-  const quality = sleep.quality || 'okay';
-
-  let rangeText = '';
-  if(h < 5){
-    rangeText = 'short night';
-  }else if(h < 7){
-    rangeText = 'a bit light';
-  }else if(h <= 9){
-    rangeText = 'solid rest';
-  }else{
-    rangeText = 'long rest';
-  }
-  sleepDetailEl.textContent = rangeText;
-
-  if(h === 0){
-    sleepTag.textContent = 'not yet';
-    sleepNote.textContent = 'No sleep window logged for last night.';
-    sleepScore = 0;
-  }else if(h < 5){
-    sleepTag.textContent = 'short night';
-    sleepNote.textContent = 'Your body may need extra softness today.';
-    sleepScore = 6;
-  }else if(h < 7){
-    sleepTag.textContent = 'light sleep';
-    sleepNote.textContent = 'You still showed up for the night.';
-    sleepScore = 12;
-  }else if(h <= 9){
-    sleepTag.textContent = 'well‑rested';
-    sleepNote.textContent = 'You gave your body real time to restore.';
-    sleepScore = 18;
-  }else{
-    sleepTag.textContent = 'deep rest';
-    sleepNote.textContent = 'Your body took the rest it needed.';
-    sleepScore = 16;
-  }
-
-  if(quality === 'rough'){
-    sleepScore = Math.max(0, sleepScore - 3);
-  }else if(quality === 'amazing'){
-    sleepScore = Math.min(20, sleepScore + 2);
-  }
-}else{
-  sleepHoursEl.textContent = '—';
-  sleepDetailEl.textContent = 'no data';
-  sleepTag.textContent = 'no data';
-  sleepNote.textContent = 'No sleep logged yet for last night.';
-  sleepScore = 0;
-}
-
-// MOOD
-if(mood && typeof mood.value === 'string'){
-  const val = mood.value;
-  const emoji = MOOD_EMOJI[val] || '●';
-  const label = MOOD_LABEL[val] || 'Set';
-
-  moodEmojiEl.textContent = emoji;
-  moodLabelEl.textContent = label;
-
-  if(val === 'amazing'){
-    moodTag.textContent = 'bright day';
-    moodNote.textContent = 'You’re feeling warmly resourced today.';
-    moodScore = 20;
-  }else if(val === 'good'){
-    moodTag.textContent = 'good day';
-    moodNote.textContent = 'You’re moving through today with steadiness.';
-    moodScore = 16;
-  }else if(val === 'okay'){
-    moodTag.textContent = 'okay is enough';
-    moodNote.textContent = 'An okay day still fully counts.';
-    moodScore = 12;
-  }else if(val === 'low'){
-    moodTag.textContent = 'low tide';
-    moodNote.textContent = 'You’re allowed to be exactly as you are.';
-    moodScore = 8;
-  }else if(val === 'rough'){
-    moodTag.textContent = 'rough day';
-    moodNote.textContent = 'Today may feel heavy. You’re still doing your best.';
-    moodScore = 6;
-  }else{
-    moodTag.textContent = 'noted';
-    moodNote.textContent = 'You checked in with yourself today.';
-    moodScore = 10;
-  }
-}else{
-  moodEmojiEl.textContent = '—';
-  moodLabelEl.textContent = 'no entry yet';
-  moodTag.textContent = 'no data';
-  moodNote.textContent = 'You haven’t painted today’s mood yet.';
-  moodScore = 0;
-}
-
-// FOCUS
-if(focus && Array.isArray(focus.items) && focus.items.length > 0){
-  const count = focus.items.length;
-  focusCountEl.textContent = count.toString();
-  focusLabelEl.textContent = count === 1 ? 'focus set' : 'focus items set';
-
-  const preview = focus.items[0];
-  if(count === 1){
-    focusTag.textContent = 'single focus';
-    focusNote.textContent = 'One gentle anchor for today: “' + preview + '”.';
-  }else{
-    focusTag.textContent = 'top ' + count;
-    focusNote.textContent = 'First focus: “' + preview + '”.';
-  }
-
-  if(count === 1){
-    focusScore = 6;
-  }else if(count === 2){
-    focusScore = 8;
-  }else{
-    focusScore = 10;
-  }
-}else{
-  focusCountEl.textContent = '0';
-  focusLabelEl.textContent = 'items set';
-  focusTag.textContent = 'optional';
-  focusNote.textContent = 'No focuses set yet for today.';
-  focusScore = 0;
-}
-
-// Current max = 70 (20 hydration + 20 sleep + 20 mood + 10 focus)
-const totalScore = hydrationScore + sleepScore + moodScore + focusScore;
-scoreValue.textContent = totalScore + ' / 100';
-
-if(totalScore === 0){
-  scoreCaption.textContent = 'Today is for gentleness. You are still okay.';
-} else if(totalScore < 40){
-  scoreCaption.textContent = 'You’re taking small, real steps.';
-} else if(totalScore < 70){
-  scoreCaption.textContent = 'You’ve been tending to yourself nicely.';
-} else{
-  scoreCaption.textContent = 'You’re caring for yourself deeply today.';
-}
-</script>
-</body>
-</html>
+        <span class="tile-label">W
