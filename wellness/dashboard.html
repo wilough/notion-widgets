@@ -80,34 +80,37 @@
   }
 
   .header-right{
-    min-width:210px;
-    max-width:260px;
+    min-width:230px;
+    max-width:280px;
   }
+
+  /* HERO WELLNESS SCORE TILE (slightly larger, more airy) */
 
   .score-tile{
-    border-radius:14px;
+    border-radius:16px;
     border:1px solid var(--line);
     background:#faf7f6;
-    padding:8px 10px;
+    padding:10px 12px;
     display:flex;
     flex-direction:column;
-    justify-content:center;
-    gap:4px;
+    justify-content:space-between;
+    gap:6px;
+    min-height:96px;
   }
 
-  .tile-header{
+  .score-header{
     display:flex;
     justify-content:space-between;
     align-items:center;
     gap:4px;
   }
-  .tile-label{
+  .score-label{
     font-size:9px;
-    letter-spacing:.12em;
+    letter-spacing:.14em;
     font-weight:600;
     color:var(--muted);
   }
-  .tile-tag{
+  .score-tag{
     font-size:9px;
     padding:2px 7px;
     border-radius:999px;
@@ -124,7 +127,7 @@
   }
   .score-main strong{
     font-family:'Playfair Display',serif;
-    font-size:20px;
+    font-size:22px;
     color:var(--wine);
   }
   .score-main span{
@@ -161,7 +164,29 @@
     gap:4px;
     min-width:150px;
     flex:1 1 0;
-    height:90px;
+    height:86px;
+  }
+
+  .tile-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:4px;
+  }
+  .tile-label{
+    font-size:9px;
+    letter-spacing:.12em;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .tile-tag{
+    font-size:9px;
+    padding:2px 7px;
+    border-radius:999px;
+    background:#f1e3e2;
+    color:var(--wine);
+    font-weight:500;
+    white-space:nowrap;
   }
 
   .tile-main{
@@ -224,9 +249,9 @@
 
     <div class="header-right">
       <div class="score-tile">
-        <div class="tile-header">
-          <span class="tile-label">WELLNESS SCORE</span>
-          <span class="tile-tag">soft</span>
+        <div class="score-header">
+          <span class="score-label">WELLNESS SCORE</span>
+          <span class="score-tag">soft</span>
         </div>
         <div class="score-main">
           <strong id="scoreValue">—</strong>
